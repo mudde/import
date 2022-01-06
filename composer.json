@@ -1,0 +1,17 @@
+{
+    "name": "mudde/import",
+    "description": "import records from multiple sources",
+    "type": "library",
+    "require": {
+        "mustache/mustache": "9999999-dev",
+        "symfony/dom-crawler": "9999999-dev"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mudde",
+            "email": "olaf.mudde@xs4all.nl"
+        }
+    ],
+    "minimum-stability": "dev"
+}

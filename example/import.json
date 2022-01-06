@@ -1,0 +1,60 @@
+{
+  "id": "import1",
+  "halt-on-errors": false,
+  "dataset": {
+    "@type": "guzzle",
+    "id": "ds1",
+    "content-type": "text/csv",
+    "selector": "\\root",
+    "host": "http://localhost/import/example/data-root.csv",
+    "mapping": {
+      "olaf": "{{ ds1.school_id | trim | lowercase }}"
+    },
+    "validate": [
+      {
+        "field": "active",
+        "validations": [
+          {
+            "@type": "isTrue"
+          }
+        ]
+      },
+      {
+        "field": "school_id",
+        "validations": [
+          {
+            "@type": "isInteger"
+          }
+        ]
+      }
+    ],
+    "children": [
+      {
+        "@type": "guzzle",
+        "id": "ds2",
+        "content-type": "application/json",
+        "selector": "\\root\\array\\item\\id={{ ds1.olaf }}",
+        "host": "http://localhost/import/example/data-school.json"
+      },
+      {
+        "@type": "guzzle",
+        "id": "ds3",
+        "content-type": "application/xml",
+        "selector": "\\root\\elements\\user\\id={{ ds1.olaf }}",
+        "host": "http://localhost/import/example/data-rest.xml",
+        "children": [
+          {
+          }
+        ]
+      }
+    ]
+  },
+  "filter": {
+    "???????": "AAAAAAAAAAAAAAAAAAAAAh"
+  },
+  "mapping": {
+    "rootId": "{{ ds1.id }}",
+    "name": "{{ ds1.name }}",
+    "schoolId": "{{ ds1.scool_id }}"
+  }
+}
