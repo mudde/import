@@ -2,11 +2,13 @@
   "id": "import1",
   "halt-on-errors": false,
   "dataset": {
-    "@type": "guzzle",
-    "id": "ds1",
-    "content-type": "text/csv",
+    "id": "ds1",    
     "selector": "\\root",
-    "host": "http://localhost/import/example/data-root.csv",
+    "source": {
+      "@type": "guzzle",
+      "host": "http://localhost/import/example/data-root.csv",
+      "content-type": "text/csv"
+    },
     "mapping": {
       "olaf": "{{ ds1.school_id | trim | lowercase }}"
     },

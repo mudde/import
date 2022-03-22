@@ -3,8 +3,10 @@
     "description": "import records from multiple sources",
     "type": "library",
     "require": {
-        "mustache/mustache": "9999999-dev",
-        "symfony/dom-crawler": "9999999-dev"
+        "symfony/serializer": "6.1.x-dev",
+        "symfony/dom-crawler": "6.1.x-dev",
+        "mustache/mustache": "dev-main",
+        "symfony/validator": "6.1.x-dev"
     },
     "license": "MIT",
     "autoload": {

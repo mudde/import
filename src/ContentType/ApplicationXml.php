@@ -6,4 +6,8 @@ use Mudde\Import\Core\ContentTypeAbstract;
 
 class ApplicationXml extends ContentTypeAbstract {
 
+    public function process():array{
+        return [];
+    }
+
 }

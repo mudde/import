@@ -9,25 +9,21 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
 {
 
     private string $id;
-    private ContentTypeAbstract $contentType;
-    private string $selector;
-    private string $host;
-    private array $mapping;
-    private array $validate;
     private array $children;
-
-
+    private array $mapping;
+    private string $selector;
+    private SourceAbstract $source;
+    private array $validate;
 
     function getDefaultConfig(): array
     {
         return [
             'id' => uniqid(),
-            'contentType' => ['@type'=> 'application/Json'],
-            'selector' => '',
-            'host' => 'localhost:8080',
-            'mapping' => [],
-            'validate' => [],
             'children' => [],
+            'mapping' => [],
+            'selector' => '\\\\**\\*',
+            'source' => ['@type'=>'local', 'host'=>'/var/www/html/github/mudde/import/example/data/data-root.csv'],
+            'validate' => [],
         ];
     }
 
@@ -104,18 +100,6 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
         return $this->id;
     }
 
-    public function setContentType(ContentTypeAbstract $contentType): DatasetAbstract
-    {
-        $this->contentType = $contentType;
-
-        return $this;
-    }
-
-    public function getContentType(): ContentTypeAbstract
-    {
-        return $this->contentType;
-    }
-
     public function setSelector(string $selector): DatasetAbstract
     {
         $this->selector = $selector;
@@ -126,18 +110,6 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
     public function getSelector(): string
     {
         return $this->selector;
-    }
-
-    public function setHost(string $host): DatasetAbstract
-    {
-        $this->host = $host;
-
-        return $this;
-    }
-
-    public function getHost(): string
-    {
-        return $this->host;
     }
 
     public function setMapping(array $mapping): DatasetAbstract
@@ -195,5 +167,17 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
     public function getChildren(): array
     {
         return $this->children;
+    }
+
+    public function getSource()
+    {
+        return $this->source;
+    }
+
+    public function setSource($source)
+    {
+        $this->source = $source;
+
+        return $this;
     }
 }
