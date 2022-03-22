@@ -3,9 +3,11 @@
 namespace Mudde\Import\Core;
 
 use Iterator;
+use Mudde\Import\Helper\ObjectHelper;
 
-abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator {
-    
+abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
+{
+
     private string $id;
     private ContentTypeAbstract $contentType;
     private string $selector;
@@ -14,66 +16,58 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator 
     private array $validate;
     private array $children;
 
-    public function __construct(array $config)
-    {
-        parent::__construct($config);
-        $this->configuring();
-    }
+
 
     function getDefaultConfig(): array
     {
         return [
-            'id' => 'PHPHelper::GUID()',
-            'contentType' => null,
-            'selector' => null,
-            'host' => null,
+            'id' => uniqid(),
+            'contentType' => ['@type'=> 'application/Json'],
+            'selector' => '',
+            'host' => 'localhost:8080',
             'mapping' => [],
             'validate' => [],
             'children' => [],
         ];
     }
 
-    public function configureContentType(array $value): void
+    public function configureContentType(array $config): void
     {
         $namespace = '\\Mudde\\Import\\ContentType\\';
-        $classname = $namespace . $value['@type'];
 
-        $this->contentType = new $classname($value);
+        $this->contentType = ObjectHelper::getObject($config, $namespace);
     }
 
     public function configureMapping(array $value): void
     {
-        $this->mapping = $mapping = [];
-        $namespace = '\\Mudde\\Import\\Mapping\\';
+        $mapping = $this->mapping = [];
 
-        foreach ($value as $config) {
-            $classname = $namespace . $config['@type'];
-            $mapping[] = new $classname($config);
+        foreach ($value as $key => $config) {
+            $mapping[$key] = $config;
         }
     }
 
     public function configureValidate(array $value): void
     {
         $this->validate = $validate = [];
-        $namespace = '\\Mudde\\Import\\Validation\\';
+        // $namespace = '\\Mudde\\Import\\Validation\\';
 
         foreach ($value as $config) {
-            $classname = $namespace . $config['@type'];
-            $validate[] = new $classname($config);
+            $validate[] = $config; //ObjectHelper::getObject($config, $namespace);
         }
     }
 
     public function configureChildren(array $value): void
     {
         $this->children = $children = [];
-        $classname = self::class;
+        $className = $this::class;
 
         foreach ($value as $config) {
-            $children[] = new $classname($config);
+            $children[] = new $className($config);
         }
     }
 
-    public function current():mixed
+    public function current(): mixed
     {
         // TODO: Implement current() method.
     }
@@ -83,7 +77,7 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator 
         // TODO: Implement next() method.
     }
 
-    public function key():mixed
+    public function key(): mixed
     {
         // TODO: Implement key() method.
     }
@@ -94,7 +88,7 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator 
         return true;
     }
 
-    public function rewind():void
+    public function rewind(): void
     {
         // TODO: Implement rewind() method.
     }
@@ -202,5 +196,4 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator 
     {
         return $this->children;
     }
-    
 }

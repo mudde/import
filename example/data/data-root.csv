@@ -1,0 +1,4 @@
+id, school_id, name, email, acvtive, reamrks
+122, 1112342, Arie Mudde, arie.mudde@xs4all.nl, true, "Arie.Mudde@twitter.com"
+162, 3312342, Niels Mudde, niels.mudde@xs4all.nl, false, "Niels.Mudde@fakebooc.com"
+192, 2342342, Olaf Mudde, olaf.mudde@xs4all.nl, true, "Olaf Mudde, the importer exporter :P"

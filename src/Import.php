@@ -4,6 +4,7 @@ namespace Mudde\Import;
 
 use Mudde\Import\Core\ConfigurableAbstract;
 use Mudde\Import\Core\DatasetAbstract;
+use Mudde\Import\Helper\ObjectHelper;
 
 class Import extends ConfigurableAbstract {
 
@@ -23,12 +24,11 @@ class Import extends ConfigurableAbstract {
         ];
     }
 
-    public function configureDataset($value): void
+    public function configureDataset($config): void
     {
-        $namespace = 'Mudde\\Import\\DataSet\\';
-        $classname = $namespace . ucfirst($value['@type']);
+        $namespace = 'Mudde\\Import\\Dataset\\';
 
-        $this->dataset = new $classname($value);
+        $this->dataset = ObjectHelper::getObject($config, $namespace);
     }
 
     public function configureFilter($value): void
@@ -36,9 +36,8 @@ class Import extends ConfigurableAbstract {
         $this->filter = $filter = [];
         $namespace = 'Mudde\\Import\\Filter\\';
 
-        foreach ($value as $item) {
-            $classname = $namespace . ucfirst($item['@type']);
-            $filter[] = new $classname($item);
+        foreach ($value as $config) {
+            $filter[] = ObjectHelper::getObject($config, $namespace);
         }
     }
 
@@ -47,22 +46,20 @@ class Import extends ConfigurableAbstract {
         $this->mapping = $mapping = [];
 
         foreach ($value as $name => $template) {
-            $filter[$name] = $template;
+            $mapping[$name] = $template;
         }
     }
 
     public function init(): void
     {
-        $config = $this->getConfig();
-
-        $this->configuring($config);
+        echo '<pre>';
+        var_dump($this);
     }
 
     public function run(): void
     {
         $this->dataset->next();
 
-        var_dump($this->dataset->current());
     }
 
     public function stop(): void
@@ -87,7 +84,7 @@ class Import extends ConfigurableAbstract {
         return $this;
     }
 
-    public function isHaltOnErrors(): bool
+    public function isHaltedOnErrors(): bool
     {
         return $this->haltOnErrors;
     }

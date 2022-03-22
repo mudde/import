@@ -7,6 +7,9 @@
         "symfony/dom-crawler": "9999999-dev"
     },
     "license": "MIT",
+    "autoload": {
+        "psr-4": { "Mudde\\Import\\": "src" }
+    },
     "authors": [
         {
             "name": "mudde",

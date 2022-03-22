@@ -1,7 +1,6 @@
 <?php
-
 namespace Mudde\Import\Core;
 
-class MappingAbstract {
+class ValidationAbstract {
     
 }

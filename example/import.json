@@ -33,14 +33,14 @@
         "@type": "guzzle",
         "id": "ds2",
         "content-type": "application/json",
-        "selector": "\\root\\array\\item\\id={{ ds1.olaf }}",
+        "selector": "\\root\\array\\item\\id={{ ds1.school_id }}",
         "host": "http://localhost/import/example/data-school.json"
       },
       {
         "@type": "guzzle",
         "id": "ds3",
         "content-type": "application/xml",
-        "selector": "\\root\\elements\\user\\id={{ ds1.olaf }}",
+        "selector": "\\root\\elements\\user\\id={{ ds1.school_id }}",
         "host": "http://localhost/import/example/data-rest.xml",
         "children": [
           {
@@ -50,7 +50,6 @@
     ]
   },
   "filter": {
-    "???????": "AAAAAAAAAAAAAAAAAAAAAh"
   },
   "mapping": {
     "rootId": "{{ ds1.id }}",
