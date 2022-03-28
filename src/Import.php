@@ -58,8 +58,7 @@ class Import extends ConfigurableAbstract
 
     public function init(): void
     {
-        echo '<pre>';
-        var_dump($this, true);
+        $this->dataset->init();
     }
 
     public function run(): void

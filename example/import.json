@@ -4,14 +4,17 @@
   "dataset": {
     "id": "ds1",    
     "selector": "\\root",
+    
     "source": {
       "_type": "guzzle",
-      "host": "http://localhost/import/example/data-root.csv",
-      "content-type": "text/csv"
+      "host": "http://localhost:8080/data/data-root.csv",
+      "contentType": "text/csv"
     },
+    
     "mapping": {
       "olaf": "{{ ds1.school_id | trim | lowercase }}"
     },
+    
     "validate": [
       {
         "field": "active",
@@ -30,22 +33,23 @@
         ]
       }
     ],
+    
     "children": [
       {
         "id": "ds2",
-        "content-type": "application/json",
         "selector": "\\root\\array\\item\\id={{ ds1.school_id }}",
         "source": {
           "_type": "guzzle",
+          "contentType": "application/json",
           "host": "http://localhost/import/example/data-school.json"
         }
       },
       {
         "id": "ds3",
-        "content-type": "application/xml",
         "selector": "\\root\\elements\\user\\id={{ ds1.school_id }}",
         "source": {
           "_type": "guzzle",
+          "contentType": "application/xml",
           "host": "http://localhost/import/example/data-rest.xml"
         },
         "children": [

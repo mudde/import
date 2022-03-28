@@ -18,6 +18,8 @@ use \Mudde\Import\Import;
 <body>
     <?php
 
+    echo '<pre>';
+
     $config = json_decode(file_get_contents('import.json'), true);
     $import = new Import($config);
 

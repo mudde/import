@@ -4,6 +4,9 @@ namespace Mudde\Import\Source;
 
 use Mudde\Import\Core\SourceAbstract;
 
-class Ftp extends SourceAbstract {
-    
+class Ftp extends SourceAbstract
+{
+    function init()
+    {
+    }
 }

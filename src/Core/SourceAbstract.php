@@ -13,16 +13,21 @@ abstract class SourceAbstract extends ConfigurableAbstract
     function getDefaultConfig(): array
     {
         return [
-            'contentType' => ['_type' => 'application/Json'],
-            'host' => 'localhost:8080'
+            'contentType' => 'application/Json',
+            'host' => 'http://localhost:8080'
         ];
     }
 
-    public function configureContentType(array $config): void
+    abstract function init();
+
+    public function configureContentType(string|array $config): void
     {
         $namespace = '\\Mudde\\Import\\ContentType\\';
+        $isString = is_string($config);
+        $className = $isString ? $config : $config['_type'];
+        $config = $isString ? [] : $config;
 
-        $this->contentType = ObjectHelper::getObject($config, $namespace);
+        $this->contentType = ObjectHelper::getObject($config, $namespace, $className);
     }
 
 

@@ -65,6 +65,10 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
         $this->source = ObjectHelper::getObject($config, $namespace);
     }
 
+    public function init(){
+        $this->source->init();
+    }
+
 
     public function current(): mixed
     {

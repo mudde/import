@@ -6,7 +6,9 @@
         "symfony/serializer": "6.1.x-dev",
         "symfony/dom-crawler": "6.1.x-dev",
         "mustache/mustache": "dev-main",
-        "symfony/validator": "6.1.x-dev"
+        "symfony/validator": "6.1.x-dev",
+        "guzzlehttp/guzzle": "^7.0",
+        "psr/http-client": "1.0.x-dev"
     },
     "license": "MIT",
     "autoload": {

@@ -11,14 +11,15 @@ class ObjectHelper
     static function properName($name, $namespace = '')
     {
         $specialChar = self::$specialChar;
-
-        return  $namespace .  str_replace($specialChar, '', ucwords($name, implode('', $specialChar)));
+        $properName = str_replace($specialChar, '', ucwords($name, implode('', $specialChar)));
+        
+        return  $namespace . $properName;
     }
 
     static function getObject($config, $namespace, $name = null)
     {
         $name = $name ?? $config['_type'] ?? null;
-        if($name === null) throw new Exception('Get object error! No correct name!'. json_encode($config));
+        if ($name === null) throw new Exception('Get object error! No correct name!' . json_encode($config));
 
         $className = ObjectHelper::properName($name, $namespace);
 
