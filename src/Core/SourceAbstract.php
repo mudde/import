@@ -2,6 +2,8 @@
 
 namespace Mudde\Import\Core;
 
+use Mudde\Import\Helper\ObjectHelper;
+
 abstract class SourceAbstract extends ConfigurableAbstract
 {
 
@@ -11,10 +13,18 @@ abstract class SourceAbstract extends ConfigurableAbstract
     function getDefaultConfig(): array
     {
         return [
-            'contentType' => ['@type' => 'application/Json'],
+            'contentType' => ['_type' => 'application/Json'],
             'host' => 'localhost:8080'
         ];
     }
+
+    public function configureContentType(array $config): void
+    {
+        $namespace = '\\Mudde\\Import\\ContentType\\';
+
+        $this->contentType = ObjectHelper::getObject($config, $namespace);
+    }
+
 
     public function setContentType(ContentTypeAbstract $contentType): SourceAbstract
     {

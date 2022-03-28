@@ -5,7 +5,7 @@
     "id": "ds1",    
     "selector": "\\root",
     "source": {
-      "@type": "guzzle",
+      "_type": "guzzle",
       "host": "http://localhost/import/example/data-root.csv",
       "content-type": "text/csv"
     },
@@ -17,7 +17,7 @@
         "field": "active",
         "validations": [
           {
-            "@type": "isTrue"
+            "_type": "isTrue"
           }
         ]
       },
@@ -25,25 +25,29 @@
         "field": "school_id",
         "validations": [
           {
-            "@type": "isInteger"
+            "_type": "isInteger"
           }
         ]
       }
     ],
     "children": [
       {
-        "@type": "guzzle",
         "id": "ds2",
         "content-type": "application/json",
         "selector": "\\root\\array\\item\\id={{ ds1.school_id }}",
-        "host": "http://localhost/import/example/data-school.json"
+        "source": {
+          "_type": "guzzle",
+          "host": "http://localhost/import/example/data-school.json"
+        }
       },
       {
-        "@type": "guzzle",
         "id": "ds3",
         "content-type": "application/xml",
         "selector": "\\root\\elements\\user\\id={{ ds1.school_id }}",
-        "host": "http://localhost/import/example/data-rest.xml",
+        "source": {
+          "_type": "guzzle",
+          "host": "http://localhost/import/example/data-rest.xml"
+        },
         "children": [
           {
           }
@@ -52,6 +56,11 @@
     ]
   },
   "filter": {
+    "rootId": [
+      {
+        "_type": "NotEmpty"
+      }
+    ]
   },
   "mapping": {
     "rootId": "{{ ds1.id }}",

@@ -2,6 +2,7 @@
 
 namespace Mudde\Import\Core;
 
+use ArrayObject;
 use Iterator;
 use Mudde\Import\Helper\ObjectHelper;
 
@@ -9,43 +10,36 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
 {
 
     private string $id;
-    private array $children;
-    private array $mapping;
+    private ArrayObject $children;
+    private ArrayObject $mapping;
     private string $selector;
     private SourceAbstract $source;
-    private array $validate;
+    private ArrayObject $validate;
 
     function getDefaultConfig(): array
     {
         return [
             'id' => uniqid(),
-            'children' => [],
-            'mapping' => [],
+            'children' => new ArrayObject(),
+            'mapping' => new ArrayObject(),
             'selector' => '\\\\**\\*',
-            'source' => ['@type'=>'local', 'host'=>'/var/www/html/github/mudde/import/example/data/data-root.csv'],
-            'validate' => [],
+            'source' => ['_type'=>'local', 'host'=>'/var/www/html/github/mudde/import/example/data/data-root.csv'],
+            'validate' => new ArrayObject(),
         ];
     }
 
-    public function configureContentType(array $config): void
+    public function configureMapping(ArrayObject|array $value): void
     {
-        $namespace = '\\Mudde\\Import\\ContentType\\';
-
-        $this->contentType = ObjectHelper::getObject($config, $namespace);
-    }
-
-    public function configureMapping(array $value): void
-    {
-        $mapping = $this->mapping = [];
+        $this->mapping = $mapping = new ArrayObject();
 
         foreach ($value as $key => $config) {
             $mapping[$key] = $config;
         }
     }
 
-    public function configureValidate(array $value): void
+    public function configureValidate( ArrayObject|array $value): void
     {
-        $this->validate = $validate = [];
+        $this->validate = $validate = new ArrayObject();
         // $namespace = '\\Mudde\\Import\\Validation\\';
 
         foreach ($value as $config) {
@@ -53,15 +47,24 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
         }
     }
 
-    public function configureChildren(array $value): void
+    public function configureChildren(ArrayObject|array $value): void
     {
-        $this->children = $children = [];
+        $this->children = $children = new ArrayObject();
+        $namespace = '';
         $className = $this::class;
 
         foreach ($value as $config) {
-            $children[] = new $className($config);
+            $children[] = ObjectHelper::getObject($config, $namespace, $className);
         }
     }
+
+    public function configureSource(ArrayObject|array $config): void
+    {
+        $namespace = '\\Mudde\\Import\\Source\\';
+
+        $this->source = ObjectHelper::getObject($config, $namespace);
+    }
+
 
     public function current(): mixed
     {
@@ -126,7 +129,7 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
         return $this;
     }
 
-    public function getMapping(): array
+    public function getMapping(): ArrayObject
     {
         return $this->mapping;
     }
@@ -145,12 +148,12 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
         return $this;
     }
 
-    public function getValidate(): array
+    public function getValidate(): ArrayObject
     {
         return $this->validate;
     }
 
-    public function setChildren(array $children): DatasetAbstract
+    public function setChildren(ArrayObject $children): DatasetAbstract
     {
         $this->children = $children;
 
@@ -159,12 +162,12 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
 
     public function addChild(DatasetAbstract $child): DatasetAbstract
     {
-        $this->children = $this->children ? [...$this->children, $child] : [$child];
+        $this->children = $this->children ? new ArrayObject([...$this->children, $child]) : new ArrayObject([$child]);
 
         return $this;
     }
 
-    public function getChildren(): array
+    public function getChildren(): ArrayObject
     {
         return $this->children;
     }

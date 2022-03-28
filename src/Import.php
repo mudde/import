@@ -2,48 +2,54 @@
 
 namespace Mudde\Import;
 
+use ArrayObject;
 use Mudde\Import\Core\ConfigurableAbstract;
 use Mudde\Import\Core\DatasetAbstract;
 use Mudde\Import\Helper\ObjectHelper;
 
-class Import extends ConfigurableAbstract {
+class Import extends ConfigurableAbstract
+{
 
     private string $id;
     private bool $haltOnErrors;
     private DatasetAbstract $dataset;
-    private array $filter;
-    private array $mapping;
+    private ArrayObject $filter;
+    private ArrayObject $mapping;
 
-    function getDefaultConfig(): array{
+    function getDefaultConfig(): array
+    {
         return [
-            'id' => 'guid-id',
+            'id' => uniqid(),
             'halt-on-errors' => false,
-            'dataset' => [],
-            'filter' => [],
-            'mapping' => []
+            'dataset' => new ArrayObject(),
+            'filter' => new ArrayObject(),
+            'mapping' => new ArrayObject()
         ];
     }
 
-    public function configureDataset($config): void
+    public function configureDataset(ArrayObject|array $config): void
     {
-        $namespace = 'Mudde\\Import\\Dataset\\';
+        $namespace = 'Mudde\\Import\\';
 
-        $this->dataset = ObjectHelper::getObject($config, $namespace);
+        $this->dataset = ObjectHelper::getObject($config, $namespace, 'Dataset');
     }
 
-    public function configureFilter($value): void
+    public function configureFilter(ArrayObject|array $value): void
     {
-        $this->filter = $filter = [];
-        $namespace = 'Mudde\\Import\\Filter\\';
+        $this->filter = $filter = new ArrayObject();
+        $namespace = 'Mudde\\Import\\Validate\\';
 
-        foreach ($value as $config) {
-            $filter[] = ObjectHelper::getObject($config, $namespace);
+        foreach ($value as $key => $configList) {
+            $filter[$key] = new ArrayObject();
+            foreach ($configList as $config) {
+                $filter[$key][] = ObjectHelper::getObject($config, $namespace);
+            }
         }
     }
 
-    public function configureMapping($value): void
+    public function configureMapping(ArrayObject|array $value): void
     {
-        $this->mapping = $mapping = [];
+        $this->mapping = $mapping = new ArrayObject();
 
         foreach ($value as $name => $template) {
             $mapping[$name] = $template;
@@ -53,13 +59,12 @@ class Import extends ConfigurableAbstract {
     public function init(): void
     {
         echo '<pre>';
-        var_dump($this);
+        var_dump($this, true);
     }
 
     public function run(): void
     {
         $this->dataset->next();
-
     }
 
     public function stop(): void
@@ -108,7 +113,7 @@ class Import extends ConfigurableAbstract {
         return $this;
     }
 
-    public function getFilter(): array
+    public function getFilter(): ArrayObject
     {
         return $this->filter;
     }
@@ -120,7 +125,7 @@ class Import extends ConfigurableAbstract {
         return $this;
     }
 
-    public function getMapping(): array
+    public function getMapping(): ArrayObject
     {
         return $this->mapping;
     }

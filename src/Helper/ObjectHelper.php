@@ -17,12 +17,12 @@ class ObjectHelper
 
     static function getObject($config, $namespace, $name = null)
     {
-        $name = $name ?? $config['@type'] ?? null;
-        if($name === null) throw new Exception('Get object error! No correct name!'. $config);
+        $name = $name ?? $config['_type'] ?? null;
+        if($name === null) throw new Exception('Get object error! No correct name!'. json_encode($config));
 
         $className = ObjectHelper::properName($name, $namespace);
 
-        if (!class_exists($className)) throw new Exception($className . 'not FOUND!');
+        if (!class_exists($className)) throw new Exception($className . ' not FOUND!');
 
         return new $className($config);
     }
