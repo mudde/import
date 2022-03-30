@@ -14,20 +14,32 @@ class TextCsv extends ContentTypeAbstract
 
     public function process($content): array
     {
-        $x = explode(PHP_EOL, $content);
+        $csv = explode(PHP_EOL, $content);
         $header = null;
         $output = [];
 
-        foreach ($x as $value) {
-            if ($header === null) {
+        foreach ($csv as $value) {
+            if (!$header) {
                 $header = str_getcsv($value);
                 continue;
             }
-
-            $data = str_getcsv($value);
+            $data = $this->processItem($value);
             $output[] = array_combine($header, $data);
         }
 
         return $output;
+    }
+
+    private function processItem($value)
+    {
+        return array_map(function ($item) {
+            return in_array($item, ['true', 'false'])
+                ? (bool) $item
+                : (is_numeric($item) && is_int(0 + $item)
+                    ? (int) $item
+                    : (is_numeric($item)
+                        ? (float) $item
+                        : $item));
+        }, str_getcsv($value));
     }
 }

@@ -63,6 +63,9 @@ class Import extends ConfigurableAbstract
 
     public function run(): void
     {
+        var_dump($this->dataset->current());
+        $this->dataset->next();
+        var_dump($this->dataset->current());
         $this->dataset->next();
     }
 

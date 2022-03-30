@@ -2,6 +2,7 @@
 
 namespace Mudde\Import\Source;
 
+use ArrayObject;
 use \GuzzleHttp\Client;
 use Mudde\Import\Core\SourceAbstract;
 
@@ -22,16 +23,18 @@ class Guzzle extends SourceAbstract
         ];
     }
 
-    function init()
+    function init(ArrayObject $data):array
     {
         $client = new Client([
             'timeout'  => $this->timeout,
         ]);
-        $res = $client->request('GET', $this->getHost(), ['auth' => ['user' => $this->getUser(), 'pass' => $this->getPass()]]);
+        $options = ['auth' => ['user' => $this->getUser(), 'pass' => $this->getPass()]];
+        $host = $this->getHost();
+        $res = $client->request('GET', $host, $options);
         $body = $res->getBody();
         $content = $body->getContents();
-
-        var_dump($this->getContentType()->process($content));
+        
+        return $this->getContentType()->process($content);
     }
 
     public function getTimeout(): float
@@ -69,5 +72,4 @@ class Guzzle extends SourceAbstract
 
         return $this;
     }
-
 }

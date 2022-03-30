@@ -3,8 +3,7 @@
   "halt-on-errors": false,
   "dataset": {
     "id": "ds1",    
-    "selector": "\\root",
-    
+    "selector": "//root/*",
     "source": {
       "_type": "guzzle",
       "host": "http://localhost:8080/data/data-root.csv",
@@ -37,20 +36,20 @@
     "children": [
       {
         "id": "ds2",
-        "selector": "\\root\\array\\item\\id={{ ds1.school_id }}",
+        "selector": "//root/*",
         "source": {
           "_type": "guzzle",
           "contentType": "application/json",
-          "host": "http://localhost/import/example/data-school.json"
+          "host": "http://localhost:8080/data/data-school.json"
         }
       },
       {
         "id": "ds3",
-        "selector": "\\root\\elements\\user\\id={{ ds1.school_id }}",
+        "selector": "//root/*",
         "source": {
           "_type": "guzzle",
           "contentType": "application/xml",
-          "host": "http://localhost/import/example/data-rest.xml"
+          "host": "http://localhost:8080//data/data-rest.xml"
         },
         "children": [
           {

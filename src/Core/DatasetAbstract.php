@@ -3,8 +3,12 @@
 namespace Mudde\Import\Core;
 
 use ArrayObject;
+use GuzzleHttp\Psr7\Response;
 use Iterator;
 use Mudde\Import\Helper\ObjectHelper;
+use SimpleXMLElement;
+use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
 {
@@ -15,6 +19,8 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
     private string $selector;
     private SourceAbstract $source;
     private ArrayObject $validate;
+    private ArrayObject $data;
+    private Iterator $dataIterator;
 
     function getDefaultConfig(): array
     {
@@ -23,7 +29,7 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
             'children' => new ArrayObject(),
             'mapping' => new ArrayObject(),
             'selector' => '\\\\**\\*',
-            'source' => ['_type'=>'local', 'host'=>'/var/www/html/github/mudde/import/example/data/data-root.csv'],
+            'source' => ['_type' => 'local', 'host' => '/var/www/html/github/mudde/import/example/data/data-root.csv'],
             'validate' => new ArrayObject(),
         ];
     }
@@ -37,7 +43,7 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
         }
     }
 
-    public function configureValidate( ArrayObject|array $value): void
+    public function configureValidate(ArrayObject|array $value): void
     {
         $this->validate = $validate = new ArrayObject();
         // $namespace = '\\Mudde\\Import\\Validation\\';
@@ -65,40 +71,88 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
         $this->source = ObjectHelper::getObject($config, $namespace);
     }
 
-    public function init(){
-        $this->source->init();
-    }
+    public function init($data = null)
+    {
+        $id = $this->id;
+        $first = $data ?? true;
+        $data = $this->data = $data ?? new ArrayObject();
+        $data[$id] = $this->source->init($data);
 
+        foreach ($this->children as $child) {
+            $child->init($data);
+        }
+
+        if ($first) {
+            $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
+            $xml = $xmlEncoder->encode((array) $data[$id], 'xml');
+            $crawler = new Crawler($xml);
+            $crawledData = $crawler->filterXPath($this->selector);
+            $this->dataIterator = $crawledData->getIterator();
+        }
+    }
 
     public function current(): mixed
     {
-        // TODO: Implement current() method.
+        $output = new ArrayObject();
+        $output[$this->id] = $this->dataIterator->current();
+
+        foreach ($this->children as $child) {
+            $output = [...$output, ...$child->current()];
+        }
+
+        return $output;
     }
 
     public function next(): void
     {
-        // TODO: Implement next() method.
+        $this->dataIterator->next();
+
+        foreach ($this->children as $child) {
+            $child->next();
+        }
     }
 
     public function key(): mixed
     {
-        // TODO: Implement key() method.
+        $output = new ArrayObject();
+        $output[$this->id] = $this->dataIterator->key();
+
+        foreach ($this->children as $child) {
+            $output = [...$output, ...$child->key()];
+        }
+
+        return $output;
     }
 
     public function valid(): bool
     {
-        // TODO: Implement valid() method.
-        return true;
+        $output = $this->dataIterator->valid();
+
+        if ($output === true) {
+            foreach ($this->children as $child) {
+                if ($child->valid() === false) {
+                    $output = false;
+                    break;
+                }
+            }
+        }
+
+        return $output;
     }
 
     public function rewind(): void
     {
-        // TODO: Implement rewind() method.
+        $this->dataIterator->rewind();
+
+        foreach ($this->children as $child) {
+            $child->rewind();
+        }
     }
 
     public function setId(string $id): DatasetAbstract
     {
         $this->id = $id;
+
         return $this;
     }
 

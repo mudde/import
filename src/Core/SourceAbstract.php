@@ -2,6 +2,7 @@
 
 namespace Mudde\Import\Core;
 
+use ArrayObject;
 use Mudde\Import\Helper\ObjectHelper;
 
 abstract class SourceAbstract extends ConfigurableAbstract
@@ -9,6 +10,7 @@ abstract class SourceAbstract extends ConfigurableAbstract
 
     private ContentTypeAbstract $contentType;
     private string $host;
+    protected $data;
 
     function getDefaultConfig(): array
     {
@@ -18,7 +20,7 @@ abstract class SourceAbstract extends ConfigurableAbstract
         ];
     }
 
-    abstract function init();
+    abstract function init(ArrayObject $data) : array;
 
     public function configureContentType(string|array $config): void
     {

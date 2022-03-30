@@ -2,12 +2,13 @@
 
 namespace Mudde\Import\Source;
 
+use ArrayObject;
 use Mudde\Import\Core\SourceAbstract;
 
-class Local extends SourceAbstract {
-    
-    function init(){
-
+class Local extends SourceAbstract
+{
+    function init(ArrayObject $data): array
+    {
+        return [];
     }
-
 }
