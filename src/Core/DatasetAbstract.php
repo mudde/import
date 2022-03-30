@@ -28,7 +28,7 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
             'id' => uniqid(),
             'children' => new ArrayObject(),
             'mapping' => new ArrayObject(),
-            'selector' => '\\\\**\\*',
+            'selector' => '//**/*',
             'source' => ['_type' => 'local', 'host' => '/var/www/html/github/mudde/import/example/data/data-root.csv'],
             'validate' => new ArrayObject(),
         ];
@@ -74,7 +74,6 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
     public function init($data = null)
     {
         $id = $this->id;
-        $first = $data ?? true;
         $data = $this->data = $data ?? new ArrayObject();
         $data[$id] = $this->source->init($data);
 
@@ -82,13 +81,12 @@ abstract class DatasetAbstract extends ConfigurableAbstract implements Iterator
             $child->init($data);
         }
 
-        if ($first) {
-            $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
-            $xml = $xmlEncoder->encode((array) $data[$id], 'xml');
-            $crawler = new Crawler($xml);
-            $crawledData = $crawler->filterXPath($this->selector);
-            $this->dataIterator = $crawledData->getIterator();
-        }
+        $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
+        $xml = $xmlEncoder->encode((array) $data[$id], 'xml');
+        $crawler = new Crawler($xml);
+        $crawledData = $crawler->filterXPath($this->selector);
+        
+        $this->dataIterator = $crawledData->getIterator();
     }
 
     public function current(): mixed
