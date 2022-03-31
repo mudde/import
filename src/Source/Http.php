@@ -7,7 +7,7 @@ use Mudde\Import\Core\SourceAbstract;
 
 class Http extends SourceAbstract
 {
-    function init(ArrayObject $data): array
+    function _init(ArrayObject $data): array
     {
         return [];
     }

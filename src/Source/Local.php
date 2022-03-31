@@ -7,7 +7,7 @@ use Mudde\Import\Core\SourceAbstract;
 
 class Local extends SourceAbstract
 {
-    function init(ArrayObject $data): array
+    function _init(ArrayObject $data): array
     {
         return [];
     }

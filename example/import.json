@@ -1,69 +1,61 @@
 {
   "id": "import1",
   "halt-on-errors": false,
-  "dataset": {
-    "id": "ds1",    
+  "source": {
+    "_type": "guzzle",
+    "host": "http://localhost:8080/data/data-root.csv",
+    "contentType": "text/csv",
+    "id": "ds1",
     "selector": "//root/*",
-    "source": {
-      "_type": "guzzle",
-      "host": "http://localhost:8080/data/data-root.csv",
-      "contentType": "text/csv"
-    },
-    
-    "mapping": {
-      "olaf": "{{ ds1.school_id | trim | lowercase }}"
-    },
-    
-    "validate": [
-      {
+    "validate": [{
         "field": "active",
-        "validations": [
-          {
-            "_type": "isTrue"
-          }
-        ]
+        "validations": [{
+          "_type": "isTrue"
+        }]
       },
       {
         "field": "school_id",
-        "validations": [
-          {
-            "_type": "isInteger"
-          }
-        ]
+        "validations": [{
+          "_type": "isInteger"
+        }]
       }
     ],
-    
-    "children": [
-      {
+    "mapping": {
+      "olaf": "{{ ds1.school_id | trim | lowercase }}"
+    },
+    "children": [{
         "id": "ds2",
-        "selector": "//root/*",
-        "source": {
-          "_type": "guzzle",
-          "contentType": "application/json",
-          "host": "http://localhost:8080/data/data-school.json"
-        }
+        "selector": "//item[user-id='{{ ds1.school_id }}']",
+        "_type": "guzzle",
+        "contentType": "application/json",
+        "host": "http://localhost:8080/data/data-school.json"
       },
       {
         "id": "ds3",
-        "selector": "//root/*",
-        "source": {
-          "_type": "guzzle",
-          "contentType": "application/xml",
-          "host": "http://localhost:8080//data/data-rest.xml"
-        },
-        "children": [
-          {
-          }
-        ]
+        "selector": "/users/user[id='{{ ds1.school_id }}']",
+        "_type": "guzzle",
+        "contentType": "application/xml",
+        "host": "http://localhost:8080//data/data-rest.xml"
       }
     ]
   },
+  "validate": [{
+      "field": "active",
+      "validations": [{
+        "_type": "isTrue"
+      }]
+    },
+    {
+      "field": "school_id",
+      "validations": [{
+        "_type": "isInteger"
+      }]
+    }
+  ],
   "filter": {
-    "rootId": [
-      {
-        "_type": "NotEmpty"
-      }
-    ]
+    "rootId": [{
+      "_type": "NotEmpty"
+    }]
   },
   "mapping": {
     "rootId": "{{ ds1.id }}",

@@ -23,7 +23,7 @@ class Guzzle extends SourceAbstract
         ];
     }
 
-    function init(ArrayObject $data):array
+    function _init(ArrayObject $data):array|string
     {
         $client = new Client([
             'timeout'  => $this->timeout,

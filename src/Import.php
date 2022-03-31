@@ -4,34 +4,30 @@ namespace Mudde\Import;
 
 use ArrayObject;
 use Mudde\Import\Core\ConfigurableAbstract;
-use Mudde\Import\Core\DatasetAbstract;
 use Mudde\Import\Helper\ObjectHelper;
 
 class Import extends ConfigurableAbstract
 {
-
     private string $id;
-    private bool $haltOnErrors;
-    private DatasetAbstract $dataset;
     private ArrayObject $filter;
+    private bool $haltOnErrors;
     private ArrayObject $mapping;
+    private Source $source;
 
     function getDefaultConfig(): array
     {
         return [
             'id' => uniqid(),
-            'halt-on-errors' => false,
-            'dataset' => new ArrayObject(),
             'filter' => new ArrayObject(),
-            'mapping' => new ArrayObject()
+            'halt-on-errors' => false,
+            'mapping' => new ArrayObject(),
+            'source' => null
         ];
     }
 
-    public function configureDataset(ArrayObject|array $config): void
+    public function configureSource(ArrayObject|array $config): void
     {
-        $namespace = 'Mudde\\Import\\';
-
-        $this->dataset = ObjectHelper::getObject($config, $namespace, 'Dataset');
+        $this->source = new Source($config);
     }
 
     public function configureFilter(ArrayObject|array $value): void
@@ -58,15 +54,16 @@ class Import extends ConfigurableAbstract
 
     public function init(): void
     {
-        $this->dataset->init();
+        $this->source->init();
     }
 
     public function run(): void
     {
-        var_dump($this->dataset->current());
-        $this->dataset->next();
-        var_dump($this->dataset->current());
-        $this->dataset->next();
+        var_dump($this->source);
+        var_dump($this->source->current());
+        $this->source->next();
+        var_dump($this->source->current());
+        $this->source->next();
     }
 
     public function stop(): void
@@ -96,16 +93,16 @@ class Import extends ConfigurableAbstract
         return $this->haltOnErrors;
     }
 
-    public function setDataset(DatasetAbstract $dataset): Import
+    public function setSource(Source $source): Import
     {
-        $this->dataset = $dataset;
+        $this->source = $source;
 
         return $this;
     }
 
-    public function getDataset(): DatasetAbstract
+    public function getSource(): Source
     {
-        return $this->dataset;
+        return $this->source;
     }
 
     public function setFilter(array $filter): Import
