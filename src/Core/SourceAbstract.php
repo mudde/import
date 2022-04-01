@@ -4,7 +4,6 @@ namespace Mudde\Import\Core;
 
 use ArrayObject;
 use Iterator;
-use JetBrains\PhpStorm\ArrayShape;
 use Mudde\Import\Helper\ObjectHelper;
 use Mudde\Import\Helper\TemplateHelper;
 use Symfony\Component\DomCrawler\Crawler;
@@ -36,11 +35,11 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         ];
     }
 
-    abstract function _init(ArrayObject $data): array | string;
+    abstract function _init(): array | string;
 
-    function init(): void
+    function init(ArrayObject $data = null): void
     {
-        $data = new ArrayObject();
+        $data = $data ?? new ArrayObject();
         $data2 = $this->_init($data);
 
         if (is_array($data2)) {
@@ -50,14 +49,19 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
             $xml = $data2;
         }
 
-        $crawler = new Crawler($xml);
-        $crawledData = $crawler->filterXPath(TemplateHelper::render($this->selector, $data));
+        var_dump(TemplateHelper::render($this->selector, $data));
 
-        $this->data = $crawledData;
-        $this->dataIterator = $crawledData->getIterator();
+        $crawler = new Crawler($xml);
+        $xpathCrawler = $crawler->filterXPath(TemplateHelper::render($this->selector, $data));
+
+        $this->data = $xpathCrawler;
+        $this->dataIterator = $xpathCrawler->getIterator();
+        $data->exchangeArray([...(array)$data, ...$this->toArray(true)]);
+
+        var_dump($data);
 
         foreach ($this->children as $child) {
-            $child->init();
+            $child->init($data);
         };
     }
 
@@ -81,7 +85,24 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
             $children[] = ObjectHelper::getObject($config, $namespace, $className);
         }
     }
-    
+
+    public function toArray(Bool $rootOnly = false): array
+    {
+
+        $data = [];
+        $id = $this->id;
+        $current = $this->dataIterator->current();
+        $data[$id] = $current ? (array) simplexml_load_string($current->C14N()) : [];
+
+        if (!$rootOnly) {
+            foreach ($this->children as $child) {
+                $data = [...$data, ...$child->toArray()];
+            }
+        }
+
+        return $data;
+    }
+
     public function setContentType(ContentTypeAbstract $contentType): self
     {
         $this->contentType = $contentType;

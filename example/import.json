@@ -32,7 +32,7 @@
       },
       {
         "id": "ds3",
-        "selector": "/users/user[id='{{ ds1.school_id }}']",
+        "selector": "//user[id='{{ ds1.school_id }}']",
         "_type": "guzzle",
         "contentType": "application/xml",
         "host": "http://localhost:8080//data/data-rest.xml"

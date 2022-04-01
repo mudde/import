@@ -10,7 +10,7 @@ class TemplateHelper
 
     static function render($text, $data): string
     {
-        $m = self::$m ?? new Mustache_Engine();
+        $m = self::$m ?? self::$m = new Mustache_Engine();
 
         return $m->render($text, $data);
     }

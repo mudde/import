@@ -3,11 +3,12 @@
 namespace Mudde\Import;
 
 use Iterator;
+use Mudde\Import\Core\SourceAbstract;
 use Mudde\Import\Helper\ObjectHelper;
 
 class Source implements Iterator
 {
-    private $source;
+    private SourceAbstract $source;
 
     public function __construct($config)
     {
@@ -16,6 +17,10 @@ class Source implements Iterator
 
     public function init(){
         $this->source->init();
+    }
+
+    public function toArray():array{
+        return $this->source->toArray();
     }
 
     public function current(): mixed

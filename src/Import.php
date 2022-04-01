@@ -59,11 +59,13 @@ class Import extends ConfigurableAbstract
 
     public function run(): void
     {
-        var_dump($this->source);
-        var_dump($this->source->current());
+        var_dump($this->source->toArray());
         $this->source->next();
-        var_dump($this->source->current());
+
+        var_dump($this->source->toArray());
         $this->source->next();
+
+        var_dump($this->source->toArray());
     }
 
     public function stop(): void

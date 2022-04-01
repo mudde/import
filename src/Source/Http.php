@@ -2,12 +2,11 @@
 
 namespace Mudde\Import\Source;
 
-use ArrayObject;
 use Mudde\Import\Core\SourceAbstract;
 
 class Http extends SourceAbstract
 {
-    function _init(ArrayObject $data): array
+    function _init(): array
     {
         return [];
     }
