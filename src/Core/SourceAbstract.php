@@ -3,6 +3,7 @@
 namespace Mudde\Import\Core;
 
 use ArrayObject;
+use Exception;
 use Iterator;
 use Mudde\Import\Helper\ObjectHelper;
 use Mudde\Import\Helper\TemplateHelper;
@@ -15,12 +16,14 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
     private string $id;
     private ArrayObject $children;
     private ContentTypeAbstract $contentType;
-    protected $data;
+    protected ArrayObject $data;
     protected Iterator $dataIterator;
     private string $host;
     private ArrayObject $mapping;
     private string $selector;
     private ArrayObject $validate;
+    private Crawler $crawler;
+    private bool $isRoot;
 
     function getDefaultConfig(): array
     {
@@ -35,30 +38,32 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         ];
     }
 
+    public function __construct(array $config, bool $isRoot = true)
+    {
+        parent::__construct($config);
+
+        $this->isRoot = $isRoot;
+    }
+
     abstract function _init(): array | string;
 
-    function init(ArrayObject $data = null): void
+    function init(ArrayObject $data = new ArrayObject()): void
     {
-        $data = $data ?? new ArrayObject();
-        $data2 = $this->_init($data);
+        $sourceXML = $this->_init();
 
-        if (is_array($data2)) {
+        if (is_array($sourceXML)) {
             $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
-            $xml = $xmlEncoder->encode($data2, 'xml');
+            $xml = $xmlEncoder->encode($sourceXML, 'xml');
         } else {
-            $xml = $data2;
+            $xml = $sourceXML;
         }
 
-        var_dump(TemplateHelper::render($this->selector, $data));
-
         $crawler = new Crawler($xml);
-        $xpathCrawler = $crawler->filterXPath(TemplateHelper::render($this->selector, $data));
+        $xpathCrawler = $this->crawler = $crawler->filterXPath(TemplateHelper::render($this->selector, $data));
 
-        $this->data = $xpathCrawler;
+        $this->crawler = $xpathCrawler;
         $this->dataIterator = $xpathCrawler->getIterator();
         $data->exchangeArray([...(array)$data, ...$this->toArray(true)]);
-
-        var_dump($data);
 
         foreach ($this->children as $child) {
             $child->init($data);
@@ -78,11 +83,10 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
     public function configureChildren(ArrayObject|array $value): void
     {
         $this->children = $children = new ArrayObject();
-        $namespace = '';
         $className = $this::class;
 
         foreach ($value as $config) {
-            $children[] = ObjectHelper::getObject($config, $namespace, $className);
+            $children[] = new $className($config, false);
         }
     }
 
@@ -188,6 +192,13 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         return $this;
     }
 
+    private function childrenInit(){
+        foreach ($this->children as $child) {
+            $data = new ArrayObject($this->toArray());
+            $child->init($data);
+        }
+    }
+
     public function current(): mixed
     {
         $output = new ArrayObject();
@@ -203,47 +214,23 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
     public function next(): void
     {
         $this->dataIterator->next();
-
-        foreach ($this->children as $child) {
-            $child->next();
-        }
+        $this->childrenInit();
     }
 
     public function key(): mixed
     {
-        $output = new ArrayObject();
-        $output[$this->id] = $this->dataIterator->key();
-
-        foreach ($this->children as $child) {
-            $output = [...$output, ...$child->key()];
-        }
-
-        return $output;
+        return $this->dataIterator->key();
     }
 
     public function valid(): bool
     {
-        $output = $this->dataIterator->valid();
-
-        if ($output === true) {
-            foreach ($this->children as $child) {
-                if ($child->valid() === false) {
-                    $output = false;
-                    break;
-                }
-            }
-        }
-
-        return $output;
+        return  $this->dataIterator->valid();
     }
 
     public function rewind(): void
     {
         $this->dataIterator->rewind();
-
-        foreach ($this->children as $child) {
-            $child->rewind();
-        }
+        $this->childrenInit();
     }
 
     public function getSelector(): string
