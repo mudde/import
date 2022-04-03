@@ -20,15 +20,17 @@ use \Mudde\Import\Import;
 
     echo '<pre>';
 
-    $config = json_decode(file_get_contents('import.json'), true);
-    $import = new Import($config);
-
     try {
+        
+        $config = json_decode(file_get_contents('import.json'), true);
+
+        $import = new Import($config);
         $import->init();
-        $import->run();
-        $import->stop();
+
+        foreach($import as $item) {
+            var_dump($item['_mapped']);
+        }
     } catch (Exception $e) {
-        echo '<pre>';
         var_dump($e);
     }
 

@@ -3,16 +3,17 @@
 namespace Mudde\Import;
 
 use ArrayObject;
+use Iterator;
 use Mudde\Import\Core\ConfigurableAbstract;
 use Mudde\Import\Helper\ObjectHelper;
 
-class Import extends ConfigurableAbstract
+class Import extends ConfigurableAbstract implements Iterator
 {
     private string $id;
     private ArrayObject $filter;
     private bool $haltOnErrors;
-    private ArrayObject $mapping;
-    private Source $source;
+    private Mapping $mapping;
+    private Dataset $source;
 
     function getDefaultConfig(): array
     {
@@ -20,14 +21,14 @@ class Import extends ConfigurableAbstract
             'id' => uniqid(),
             'filter' => new ArrayObject(),
             'halt-on-errors' => false,
-            'mapping' => new ArrayObject(),
+            'mapping' => '',
             'source' => null
         ];
     }
 
     public function configureSource(ArrayObject|array $config): void
     {
-        $this->source = new Source($config);
+        $this->source = new Dataset($config);
     }
 
     public function configureFilter(ArrayObject|array $value): void
@@ -43,13 +44,15 @@ class Import extends ConfigurableAbstract
         }
     }
 
+    public function configureValidate(ArrayObject|array $value){
+        $this->validate = new Validate($value);
+    }
+
     public function configureMapping(ArrayObject|array $value): void
     {
-        $this->mapping = $mapping = new ArrayObject();
+        $mapping = new ArrayObject($value);
 
-        foreach ($value as $name => $template) {
-            $mapping[$name] = $template;
-        }
+        $this->mapping = new Mapping($mapping);
     }
 
     public function init(): void
@@ -57,19 +60,13 @@ class Import extends ConfigurableAbstract
         $this->source->init();
     }
 
-    public function run(): void
+    public function toArray(): ArrayObject
     {
-        var_dump($this->source->toArray());
-        $this->source->next();
+        $data = $this->source->toArray();
+        $mapped = ['_mapped' => [...$this->mapping->map($data), ...$data['_mapped']]];
+        $output = new ArrayObject([...$data, ...$mapped]);
 
-        var_dump($this->source->toArray());
-        $this->source->next();
-
-        var_dump($this->source->toArray());
-    }
-
-    public function stop(): void
-    {
+        return $output;
     }
 
     public function getId(): string
@@ -95,14 +92,14 @@ class Import extends ConfigurableAbstract
         return $this->haltOnErrors;
     }
 
-    public function setSource(Source $source): Import
+    public function setSource(Dataset $source): Import
     {
         $this->source = $source;
 
         return $this;
     }
 
-    public function getSource(): Source
+    public function getSource(): Dataset
     {
         return $this->source;
     }
@@ -119,15 +116,40 @@ class Import extends ConfigurableAbstract
         return $this->filter;
     }
 
-    public function setMapping(array $mapping): Import
+    public function setMapping(Mapping $mapping): Import
     {
         $this->mapping = $mapping;
 
         return $this;
     }
 
-    public function getMapping(): ArrayObject
+    public function getMapping(): Mapping
     {
         return $this->mapping;
+    }
+
+    public function current(): mixed
+    {
+        return $this->toArray();
+    }
+
+    public function next(): void
+    {
+        $this->source->next();
+    }
+
+    public function key(): mixed
+    {
+        return $this->source->key();
+    }
+
+    public function valid(): bool
+    {
+        return  $this->source->valid();
+    }
+
+    public function rewind(): void
+    {
+        $this->source->rewind();
     }
 }

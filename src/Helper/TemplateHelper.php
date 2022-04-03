@@ -6,12 +6,27 @@ use Mustache_Engine;
 
 class TemplateHelper
 {
-    public static $m;
+    public static $mustache;
 
     static function render($text, $data): string
     {
-        $m = self::$m ?? self::$m = new Mustache_Engine();
+        $mustache = self::getEngine();
 
-        return $m->render($text, $data);
+        return $mustache->render($text, $data);
+    }
+
+    static private function getEngine(): Mustache_Engine
+    {
+        if (self::$mustache) return self::$mustache;
+
+        self::$mustache = $mustache = new Mustache_Engine(['pragmas' => [Mustache_Engine::PRAGMA_FILTERS]]);
+        $mustache->addHelper('lower', function ($value) {
+            return strtolower((string) $value);
+        });
+        $mustache->addHelper('upper', function ($value) {
+            return strtoupper((string) $value);
+        });
+
+        return self::$mustache;
     }
 }

@@ -1,6 +1,14 @@
 <?php
+
 namespace Mudde\Import\Core;
 
-class ValidationAbstract {
-    
+abstract class ValidationAbstract extends ConfigurableAbstract
+{
+    abstract function isValid(mixed $data);
+    abstract function getError();
+
+    public function getDefaultConfig(): array
+    {
+        return [];
+    }
 }

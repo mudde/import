@@ -2,11 +2,12 @@
 
 namespace Mudde\Import;
 
+use ArrayObject;
 use Iterator;
 use Mudde\Import\Core\SourceAbstract;
 use Mudde\Import\Helper\ObjectHelper;
 
-class Source implements Iterator
+class Dataset implements Iterator
 {
     private SourceAbstract $source;
 
@@ -19,7 +20,7 @@ class Source implements Iterator
         $this->source->init();
     }
 
-    public function toArray():array{
+    public function toArray():ArrayObject{
         return $this->source->toArray();
     }
 

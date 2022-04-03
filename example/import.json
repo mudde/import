@@ -16,12 +16,12 @@
       {
         "field": "school_id",
         "validations": [{
-          "_type": "isInteger"
+          "_type": "PositiveOrZero"
         }]
       }
     ],
     "mapping": {
-      "olaf": "{{ ds1.school_id | trim | lowercase }}"
+      "olaf": "{{ ds1.school_id }}"
     },
     "children": [{
         "id": "ds2",
@@ -59,7 +59,7 @@
   },
   "mapping": {
     "rootId": "{{ ds1.id }}",
-    "name": "{{ ds1.name }}",
-    "schoolId": "{{ ds1.scool_id }}"
+    "name": "{{ ds1.name | lower }}",
+    "schoolId": "{{ ds1.school_id }}"
   }
 }

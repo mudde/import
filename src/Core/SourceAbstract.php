@@ -3,15 +3,16 @@
 namespace Mudde\Import\Core;
 
 use ArrayObject;
-use Exception;
 use Iterator;
 use Mudde\Import\Helper\ObjectHelper;
 use Mudde\Import\Helper\TemplateHelper;
+use Mudde\Import\MApping;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
 {
+    abstract function _init(): array | string;
 
     private string $id;
     private ArrayObject $children;
@@ -19,11 +20,9 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
     protected ArrayObject $data;
     protected Iterator $dataIterator;
     private string $host;
-    private ArrayObject $mapping;
+    private Mapping $mapping;
     private string $selector;
     private ArrayObject $validate;
-    private Crawler $crawler;
-    private bool $isRoot;
 
     function getDefaultConfig(): array
     {
@@ -36,38 +35,6 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
             'contentType' => 'application/Json',
             'host' => 'http://localhost:8080'
         ];
-    }
-
-    public function __construct(array $config, bool $isRoot = true)
-    {
-        parent::__construct($config);
-
-        $this->isRoot = $isRoot;
-    }
-
-    abstract function _init(): array | string;
-
-    function init(ArrayObject $data = new ArrayObject()): void
-    {
-        $sourceXML = $this->_init();
-
-        if (is_array($sourceXML)) {
-            $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
-            $xml = $xmlEncoder->encode($sourceXML, 'xml');
-        } else {
-            $xml = $sourceXML;
-        }
-
-        $crawler = new Crawler($xml);
-        $xpathCrawler = $this->crawler = $crawler->filterXPath(TemplateHelper::render($this->selector, $data));
-
-        $this->crawler = $xpathCrawler;
-        $this->dataIterator = $xpathCrawler->getIterator();
-        $data->exchangeArray([...(array)$data, ...$this->toArray(true)]);
-
-        foreach ($this->children as $child) {
-            $child->init($data);
-        };
     }
 
     public function configureContentType(string|array $config): void
@@ -86,23 +53,63 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         $className = $this::class;
 
         foreach ($value as $config) {
-            $children[] = new $className($config, false);
+            $children[] = new $className($config);
         }
     }
 
-    public function toArray(Bool $rootOnly = false): array
+    public function configureMapping($value): void
     {
+        $mapping = is_array($value) ? new ArrayObject($value) : $value;
 
-        $data = [];
+        $this->mapping = new MApping($mapping);
+    }
+
+    function init(ArrayObject $data = new ArrayObject()): void
+    {
+        $xml = $this->init_xml();
+        $crawler = new Crawler($xml);
+        $crawler = $this->crawler = $crawler->filterXPath(TemplateHelper::render($this->selector, $data));
+
+        $this->crawler = $crawler;
+        $this->dataIterator = $crawler->getIterator();
+
+        $data->exchangeArray([...$data, ...$this->toArray(true)]);
+        $data['_mapped'] = [...$data['_mapped'], ...$this->mapping->map($data)];
+
+        foreach ($this->children as $child) {
+            $child->init($data);
+        };
+    }
+
+    private function init_xml(): string
+    {
+        $sourceXML = $this->_init();
+
+        if (is_array($sourceXML)) {
+            $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
+            $xml = $xmlEncoder->encode($sourceXML, 'xml');
+        } else {
+            $xml = $sourceXML;
+        }
+
+        return $xml;
+    }
+
+    public function toArray(Bool $rootOnly = false): ArrayObject
+    {
         $id = $this->id;
+        $data = new ArrayObject();
         $current = $this->dataIterator->current();
+
         $data[$id] = $current ? (array) simplexml_load_string($current->C14N()) : [];
 
         if (!$rootOnly) {
             foreach ($this->children as $child) {
-                $data = [...$data, ...$child->toArray()];
+                $data->exchangeArray([...$data, ...$child->toArray()]);
             }
-        }
+        }   
+
+        $data['_mapped'] = $this->mapping->map($data);
 
         return $data;
     }
@@ -156,14 +163,14 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         return $this;
     }
 
-    public function getMapping(): ArrayObject
+    public function getMapping(): Mapping
     {
         return $this->mapping;
     }
 
-    public function setMapping(ArrayObject|array $mapping): self
+    public function setMapping(MApping $mapping): self
     {
-        $this->mapping = is_array($mapping) ? new ArrayObject($mapping) : $mapping;
+        $this->mapping = $mapping;
 
         return $this;
     }
@@ -192,11 +199,16 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         return $this;
     }
 
-    private function childrenInit(){
-        foreach ($this->children as $child) {
-            $data = new ArrayObject($this->toArray());
-            $child->init($data);
-        }
+    public function getSelector(): string
+    {
+        return $this->selector;
+    }
+
+    public function setSelector(string $selector): self
+    {
+        $this->selector = $selector;
+
+        return $this;
     }
 
     public function current(): mixed
@@ -233,15 +245,11 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         $this->childrenInit();
     }
 
-    public function getSelector(): string
+    private function childrenInit()
     {
-        return $this->selector;
-    }
-
-    public function setSelector(string $selector): self
-    {
-        $this->selector = $selector;
-
-        return $this;
+        foreach ($this->children as $child) {
+            $data = new ArrayObject($this->toArray());
+            $child->init($data);
+        }
     }
 }
