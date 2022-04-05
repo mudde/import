@@ -15,12 +15,13 @@ class Regex extends ValidationAbstract
         ];
     }
 
-    public function isValid($data)
+    public function isValid(mixed $data):bool
+
     {
         return preg_match($this->regex, $data);
     }
 
-    public function getError()
+    public function getError():string
     {
         return 'Value is not matching the regex';
     }

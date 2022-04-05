@@ -14,6 +14,7 @@ class Import extends ConfigurableAbstract implements Iterator
     private bool $haltOnErrors;
     private Mapping $mapping;
     private Dataset $source;
+    private ArrayObject $validate;
 
     function getDefaultConfig(): array
     {
@@ -22,7 +23,8 @@ class Import extends ConfigurableAbstract implements Iterator
             'filter' => new ArrayObject(),
             'halt-on-errors' => false,
             'mapping' => '',
-            'source' => null
+            'source' => null,
+            'validate' => [],
         ];
     }
 
@@ -44,8 +46,15 @@ class Import extends ConfigurableAbstract implements Iterator
         }
     }
 
-    public function configureValidate(ArrayObject|array $value){
-        $this->validate = new Validate($value);
+    public function configureValidate(ArrayObject|array $value)
+    {
+        $this->validate = new ArrayObject();
+
+        foreach ($value as $key => $validations) {
+            foreach ($validations as $config) {
+                $this->validate[$key][] = new Validate($config);
+            }
+        }
     }
 
     public function configureMapping(ArrayObject|array $value): void
@@ -63,8 +72,27 @@ class Import extends ConfigurableAbstract implements Iterator
     public function toArray(): ArrayObject
     {
         $data = $this->source->toArray();
-        $mapped = ['_mapped' => [...$this->mapping->map($data), ...$data['_mapped']]];
+        $mapped = ['_mapped' => [...$this->map($data), ...$data['_mapped']]];
         $output = new ArrayObject([...$data, ...$mapped]);
+
+        return $output;
+    }
+
+    public function map(): ArrayObject
+    {
+        $data = $this->source->toArray();
+        $output = $this->mapping->map($data);
+        foreach ($output as $key => $value) {
+            $val = $this->validate[$key];
+            if ($val) {
+                foreach ($val as $validate) {
+                    $errors = $validate->validate($value);
+                    if ($errors->count() > 0) {
+                        $output['_errors'] = $errors;
+                    }
+                }
+            }
+        }
 
         return $output;
     }

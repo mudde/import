@@ -12,17 +12,18 @@ class Range extends ValidationAbstract
     public function getDefaultConfig(): array
     {
         return [
+            parent::getDefaultConfig(),
             'min' => 0,
             'max' => PHP_INT_MAX,
         ];
     }
 
-    public function isValid($data)
+    public function isValid(mixed $data):bool
     {
         return (int) $data >= $this->min && (int) $data <= $this->max;
     }
 
-    public function getError()
+    public function getError():string
     {
         return 'Value is not in range';
     }

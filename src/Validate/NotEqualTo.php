@@ -11,16 +11,17 @@ class NotEqualTo extends ValidationAbstract
     public function getDefaultConfig():array
     {
         return [
+            parent::getDefaultConfig(),
             'value' => null,
         ];
     }
 
-    public function isValid($data)
+    public function isValid(mixed $data):bool
     {
         return $this->value == $data;
     }
 
-    public function getError()
+    public function getError():string
     {
         return 'Value is not empty';
     }

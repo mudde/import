@@ -28,13 +28,15 @@ class TextCsv extends ContentTypeAbstract
     private function processItem($value)
     {
         return array_map(function ($item) {
-            return in_array($item, ['true', 'false'])
-                ? (bool) $item
-                : (is_numeric($item) && is_int(0 + $item)
-                    ? (int) $item
-                    : (is_numeric($item)
-                        ? (float) $item
-                        : $item));
+            return strtolower($item) == 'true'
+                ?  true
+                : (strtolower($item) == 'false'
+                    ? false
+                    : (is_numeric($item) && is_int(0 + $item)
+                        ? (int) $item
+                        : (is_numeric($item)
+                            ? (float) $item
+                            : $item)));
         }, str_getcsv($value));
     }
 }

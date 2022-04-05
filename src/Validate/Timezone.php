@@ -8,7 +8,7 @@ use Mudde\Import\Core\ValidationAbstract;
 
 class TimeZone extends ValidationAbstract
 {
-    public function isValid($data)
+    public function isValid(mixed $data):bool
     {
         foreach (DateTimeZone::listAbbreviations() as $timezone) {
             if ($data = $timezone['timezone_id']) {
@@ -19,7 +19,7 @@ class TimeZone extends ValidationAbstract
         return false;
     }
 
-    public function getError()
+    public function getError():string
     {
         return 'Value is not a valid timezone';
     }

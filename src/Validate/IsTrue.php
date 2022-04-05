@@ -6,12 +6,12 @@ use Mudde\Import\Core\ValidationAbstract;
 
 class IsTrue extends ValidationAbstract
 {
-    public function isValid($data)
+    public function isValid(mixed $data):bool
     {
-        return $data == true;
+        return (bool) $data == true;
     }
 
-    public function getError()
+    public function getError():string
     {
         return 'Value is not true';
     }

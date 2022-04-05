@@ -6,12 +6,12 @@ use Mudde\Import\Core\ValidationAbstract;
 
 class NotEmpty extends ValidationAbstract
 {
-    public function isValid($data)
+    public function isValid(mixed $data):bool
     {
         return !empty($data);
     }
 
-    public function getError()
+    public function getError():string
     {
         return 'Value is not empty';
     }

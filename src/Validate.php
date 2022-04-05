@@ -3,54 +3,29 @@
 namespace Mudde\Import;
 
 use ArrayObject;
-use Mudde\Import\Core\ConfigurableAbstract;
+use Mudde\Import\Core\ValidationAbstract;
 use Mudde\Import\Helper\ObjectHelper;
 
-class Validate extends ConfigurableAbstract
+class Validate
 {
 
-    private ArrayObject $validations;
+    private ValidationAbstract $validation;
 
-    public function getDefaultConfig(): array
+    public function __construct($config)
     {
-        return [
-            'validators' => new ArrayObject()
-        ];
+        $this->validation = ObjectHelper::getObject($config, 'Mudde\\Import\\Validate\\');
     }
 
-    public function configureValidate(array $config): void
-    {
-        $configValidator = $this->validators = new ArrayObject();
-
-        foreach ($config as $key => $item) {
-            $configValidator[$key][] = ObjectHelper::getObject($item, 'Mudde\Import\Validate\\');
-        }
-    }
-
-    public function getValidations()
+    public function getValidations():ValidationAbstract
     {
         return $this->validations;
     }
 
-    public function setValidations($validations): self
-    {
-        $this->validations = $validations;
-
-        return $this;
-    }
-
-    public function validate(ArrayObject $data): ArrayObject
+    public function validate(mixed $data): ArrayObject
     {
         $output = new ArrayObject();
-
-        foreach ($this->validation as $key => $validators) {
-            $output[$key] = new ArrayObject();
-            foreach ($validators as $validator) {
-                if (!$validator->isValid($data[$key])) {
-                    $output[$key][] = $validator->getError();
-                }
-            }
-        }
+        $validation = $this->validation;
+        $validation->isValid($data) || $output[] = $validation->getError();
 
         return $output;
     }

@@ -7,19 +7,14 @@
     "contentType": "text/csv",
     "id": "ds1",
     "selector": "//root/*",
-    "validate": [{
-        "field": "active",
-        "validations": [{
-          "_type": "isTrue"
-        }]
-      },
-      {
-        "field": "school_id",
-        "validations": [{
-          "_type": "PositiveOrZero"
-        }]
-      }
-    ],
+    "validate": {
+      "active": [{
+        "_type": "isTrue"
+      }],
+      "school_id": [{
+        "_type": "PositiveOrZero"
+      }]
+    },
     "mapping": {
       "olaf": "{{ ds1.school_id }}"
     },
@@ -39,27 +34,18 @@
       }
     ]
   },
-  "validate": [{
-      "field": "active",
-      "validations": [{
-        "_type": "isTrue"
-      }]
-    },
-    {
-      "field": "school_id",
-      "validations": [{
-        "_type": "isInteger"
-      }]
-    }
-  ],
-  "filter": {
-    "rootId": [{
-      "_type": "NotEmpty"
+  "validate": {
+    "active": [{
+      "_type": "isTrue"
+    }],
+    "school_id": [{
+      "_type": "Positive"
     }]
   },
   "mapping": {
     "rootId": "{{ ds1.id }}",
     "name": "{{ ds1.name | lower }}",
-    "schoolId": "{{ ds1.school_id }}"
+    "schoolId": "{{ ds1.school_id }}",
+    "active": "{{ ds1.active }}"
   }
 }
