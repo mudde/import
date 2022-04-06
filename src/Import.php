@@ -72,7 +72,7 @@ class Import extends ConfigurableAbstract implements Iterator
     public function toArray(): ArrayObject
     {
         $data = $this->source->toArray();
-        $mapped = ['_mapped' => [...$this->map($data), ...$data['_mapped']]];
+        $mapped = ['_mapped' => $this->map($data)];
         $output = new ArrayObject([...$data, ...$mapped]);
 
         return $output;
@@ -82,19 +82,40 @@ class Import extends ConfigurableAbstract implements Iterator
     {
         $data = $this->source->toArray();
         $output = $this->mapping->map($data);
+
         foreach ($output as $key => $value) {
-            $val = $this->validate[$key];
-            if ($val) {
-                foreach ($val as $validate) {
-                    $errors = $validate->validate($value);
-                    if ($errors->count() > 0) {
-                        $output['_errors'] = $errors;
-                    }
+            $validators = $this->validate[$key] ??  new ArrayObject();
+            foreach ($validators as $validate) {
+                $valid = $validate->validate($value);
+
+                if ($valid !== true) {
+                    $output['_errors'] = $output['_errors'] ?? new ArrayObject();
+                    $output['_errors'][$key] = $valid;
                 }
             }
         }
 
         return $output;
+    }
+
+    public function validate(): bool
+    {
+        $data = $this->source->toArray(true);
+        $output = $this->mapping->map($data);
+
+        foreach ($output as $key => $value) {
+            $val = $this->validate[$key];
+            if ($val) {
+                foreach ($val as $validate) {
+                    $valid = $validate->validate($value);
+                    if ($valid !== true) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     public function getId(): string
@@ -112,6 +133,7 @@ class Import extends ConfigurableAbstract implements Iterator
     public function setHaltOnErrors(bool $haltOnErrors): Import
     {
         $this->haltOnErrors = $haltOnErrors;
+
         return $this;
     }
 
@@ -163,7 +185,14 @@ class Import extends ConfigurableAbstract implements Iterator
 
     public function next(): void
     {
-        $this->source->next();
+        $source = $this->source;
+        
+        while ($source->valid()) {
+            $source->next();
+            if ($this->validate()) {
+                break;
+            }
+        }
     }
 
     public function key(): mixed

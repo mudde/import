@@ -2,6 +2,7 @@
 
 namespace Mudde\Import\Source;
 
+use ArrayObject;
 use \GuzzleHttp\Client;
 use Mudde\Import\Core\SourceAbstract;
 
@@ -22,7 +23,7 @@ class Guzzle extends SourceAbstract
         ];
     }
 
-    function _init(): array|string
+    function _init(): ArrayObject
     {
         $client = new Client([
             'timeout'  => $this->timeout,

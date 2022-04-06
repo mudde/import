@@ -28,7 +28,8 @@ use \Mudde\Import\Import;
         $import->init();
 
         foreach($import as $item) {
-            var_dump($item['_mapped']);
+            $array = $item->getArrayCopy();
+            var_dump($array['_mapped'] ?? $array);
         }
     } catch (Exception $e) {
         var_dump($e);

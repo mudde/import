@@ -8,8 +8,6 @@ class Positive extends ValidationAbstract
 {
     public function isValid(mixed $data):bool
     {
-var_dump($data);exit;
-
         return (int) $data > 0;
     }
 

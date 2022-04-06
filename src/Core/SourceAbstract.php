@@ -7,12 +7,13 @@ use Iterator;
 use Mudde\Import\Helper\ObjectHelper;
 use Mudde\Import\Helper\TemplateHelper;
 use Mudde\Import\MApping;
+use Mudde\Import\Validate;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
 {
-    abstract function _init(): array | string;
+    abstract function _init(): ArrayObject;
 
     private string $id;
     private ArrayObject $children;
@@ -64,14 +65,46 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         $this->mapping = new MApping($mapping);
     }
 
+    public function configureValidate(ArrayObject|array $value)
+    {
+        $this->validate = new ArrayObject();
+
+        foreach ($value as $key => $validations) {
+            foreach ($validations as $config) {
+                $this->validate[$key][] = new Validate($config);
+            }
+        }
+    }
+
     function init(ArrayObject $data = new ArrayObject()): void
     {
         $xml = $this->init_xml();
         $crawler = new Crawler($xml);
         $crawler = $this->crawler = $crawler->filterXPath(TemplateHelper::render($this->selector, $data));
-
-        $this->crawler = $crawler;
         $this->dataIterator = $crawler->getIterator();
+
+        // $tmp = new ArrayObject();
+        // foreach($crawler->getIterator() as $item){
+        //     $datax = (array) simplexml_load_string( $item->C14N());
+        //     $errorFound = false;
+        //     foreach($datax as $key=> $value){
+        //         $val = $this->validate[$key];
+        //         if ($val) {
+        //             foreach ($val as $validate) {
+        //                 $errors = $validate->validate($value);
+        //                 if ($errors !== true) {
+        //                     $errorFound = true;
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //         if(!$errorFound){
+        //             $tmp[] = $item;
+        //         }
+        //     }
+
+        // }
+
 
         $data->exchangeArray([...$data, ...$this->toArray(true)]);
         $data['_mapped'] = [...$data['_mapped'], ...$this->mapping->map($data)];
@@ -84,14 +117,9 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
     private function init_xml(): string
     {
         $sourceXML = $this->_init();
-
-        if (is_array($sourceXML)) {
-            $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
-            $xml = $xmlEncoder->encode($sourceXML, 'xml');
-        } else {
-            $xml = $sourceXML;
-        }
-
+        $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
+        $xml = $xmlEncoder->encode($sourceXML, 'xml');
+        
         return $xml;
     }
 

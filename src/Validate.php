@@ -21,11 +21,11 @@ class Validate
         return $this->validations;
     }
 
-    public function validate(mixed $data): ArrayObject
+    public function validate(mixed $data): bool | string
     {
-        $output = new ArrayObject();
+        $output = true;
         $validation = $this->validation;
-        $validation->isValid($data) || $output[] = $validation->getError();
+        $validation->isValid($data) || $output = $validation->getError();
 
         return $output;
     }

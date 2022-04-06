@@ -2,16 +2,17 @@
 
 namespace Mudde\Import\ContentType;
 
+use ArrayObject;
 use Mudde\Import\Core\ContentTypeAbstract;
 
 class TextCsv extends ContentTypeAbstract
 {
 
-    public function process($content): array
+    public function process($content): ArrayObject
     {
         $csv = explode(PHP_EOL, $content);
         $header = null;
-        $output = [];
+        $output = new ArrayObject();
 
         foreach ($csv as $value) {
             if (!$header) {
