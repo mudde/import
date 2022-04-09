@@ -16,10 +16,10 @@ class Guzzle extends SourceAbstract
     function getDefaultConfig(): array
     {
         return [
-            'timeout' => 2.0,
+            ...parent::getDefaultConfig(),
+            'timeout' => 20.0,
             'user' => '',
-            'pass' => '',
-            ...parent::getDefaultConfig()
+            'pass' => ''
         ];
     }
 
@@ -28,7 +28,7 @@ class Guzzle extends SourceAbstract
         $client = new Client([
             'timeout'  => $this->timeout,
         ]);
-        $options = ['auth' => ['user' => $this->getUser(), 'pass' => $this->getPass()]];
+        $options = $this->getUser() ? ['auth' => ['user' => $this->getUser(), 'pass' => $this->getPass()]] : [];
         $host = $this->getHost();
         $res = $client->request('GET', $host, $options);
         $body = $res->getBody();

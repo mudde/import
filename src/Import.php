@@ -4,8 +4,14 @@ namespace Mudde\Import;
 
 use ArrayObject;
 use Iterator;
+use Monolog\Handler\FirePHPHandler;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Mudde\Import\Core\ConfigurableAbstract;
+use Mudde\Import\Exception\ImportException;
 use Mudde\Import\Helper\ObjectHelper;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class Import extends ConfigurableAbstract implements Iterator
 {
@@ -15,6 +21,8 @@ class Import extends ConfigurableAbstract implements Iterator
     private Mapping $mapping;
     private Dataset $source;
     private ArrayObject $validate;
+    private LoggerInterface $log;
+    private ArrayObject $lastErrors;
 
     function getDefaultConfig(): array
     {
@@ -25,7 +33,13 @@ class Import extends ConfigurableAbstract implements Iterator
             'mapping' => '',
             'source' => null,
             'validate' => [],
+            'log' => new NullLogger(),
         ];
+    }
+
+    public function configureLog(LoggerInterface | NULL $config): void
+    {
+        $this->log = $config;
     }
 
     public function configureSource(ArrayObject|array $config): void
@@ -66,7 +80,15 @@ class Import extends ConfigurableAbstract implements Iterator
 
     public function init(): void
     {
+        $this->log->info('Starting import @ ' . date('Y-m-d H:i:s', time()));
         $this->source->init();
+    }
+
+    public function stop(): void
+    {
+        $this->log->info('Ending import @ ' . date('Y-m-d H:i:s', time()));
+        if(file_exists(__DIR__ . '/../log/my_app.log'))
+        echo (file_get_contents(__DIR__ . '/../log/my_app.log'));
     }
 
     public function toArray(): ArrayObject
@@ -83,39 +105,79 @@ class Import extends ConfigurableAbstract implements Iterator
         $data = $this->source->toArray();
         $output = $this->mapping->map($data);
 
-        foreach ($output as $key => $value) {
-            $validators = $this->validate[$key] ??  new ArrayObject();
-            foreach ($validators as $validate) {
-                $valid = $validate->validate($value);
-
-                if ($valid !== true) {
-                    $output['_errors'] = $output['_errors'] ?? new ArrayObject();
-                    $output['_errors'][$key] = $valid;
-                }
-            }
-        }
-
         return $output;
     }
 
     public function validate(): bool
     {
         $data = $this->source->toArray(true);
+        $errors = null;
         $output = $this->mapping->map($data);
+        $validators = $this->validate;
 
         foreach ($output as $key => $value) {
-            $val = $this->validate[$key];
-            if ($val) {
-                foreach ($val as $validate) {
-                    $valid = $validate->validate($value);
-                    if ($valid !== true) {
-                        return false;
-                    }
+            $keyValidators = $validators[$key] ?? new ArrayObject();
+            foreach ($keyValidators as $validate) {
+                $valid = $validate->validate($value);
+
+                if ($valid !== true) {
+                    $errors = $errors ?? $this->lastErrors = new ArrayObject();
+                    $errors[$key] = $errors[$key] ?? new ArrayObject();
+                    $errors[$key][] = $valid;
                 }
             }
         }
 
-        return true;
+        if ($errors) {
+            $this->log->error('Validation errors: ' . json_encode([...['errors'=>$errors], ...$data]));
+            $this->haltOnErrors();
+        }
+
+        return $errors ? false : true;
+    }
+
+    public function haltOnErrors(): void
+    {
+        if ($this->haltOnErrors) {
+            $this->log->info('Halting import @ ' . date('Y-m-d H:i:s', time()));
+            $this->stop();
+            throw new ImportException('Import halted on errors');
+        }
+    }
+
+    public function current(): mixed
+    {
+        return $this->toArray();
+    }
+
+    public function next(): void
+    {
+        $source = $this->source;
+        
+
+        while ($source->valid()) {
+            $source->next();
+            if ($source->valid()) {
+                if ($this->validate()) {
+                    break;
+                }
+            }
+        };
+    }
+
+    public function key(): mixed
+    {
+        return $this->source->key();
+    }
+
+    public function valid(): bool
+    {
+        return  $this->source->valid();
+    }
+
+    public function rewind(): void
+    {
+        $this->source->rewind();
     }
 
     public function getId(): string
@@ -178,35 +240,15 @@ class Import extends ConfigurableAbstract implements Iterator
         return $this->mapping;
     }
 
-    public function current(): mixed
+    public function getLog(): LoggerInterface
     {
-        return $this->toArray();
+        return $this->log;
     }
 
-    public function next(): void
+    public function setLog(LoggerInterface $log): self
     {
-        $source = $this->source;
-        
-        while ($source->valid()) {
-            $source->next();
-            if ($this->validate()) {
-                break;
-            }
-        }
-    }
+        $this->log = $log;
 
-    public function key(): mixed
-    {
-        return $this->source->key();
-    }
-
-    public function valid(): bool
-    {
-        return  $this->source->valid();
-    }
-
-    public function rewind(): void
-    {
-        $this->source->rewind();
+        return $this;
     }
 }

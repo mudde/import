@@ -31,6 +31,8 @@ use \Mudde\Import\Import;
             $array = $item->getArrayCopy();
             var_dump($array['_mapped'] ?? $array);
         }
+
+        $import->stop();
     } catch (Exception $e) {
         var_dump($e);
     }

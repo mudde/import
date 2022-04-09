@@ -83,31 +83,7 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         $crawler = $this->crawler = $crawler->filterXPath(TemplateHelper::render($this->selector, $data));
         $this->dataIterator = $crawler->getIterator();
 
-        // $tmp = new ArrayObject();
-        // foreach($crawler->getIterator() as $item){
-        //     $datax = (array) simplexml_load_string( $item->C14N());
-        //     $errorFound = false;
-        //     foreach($datax as $key=> $value){
-        //         $val = $this->validate[$key];
-        //         if ($val) {
-        //             foreach ($val as $validate) {
-        //                 $errors = $validate->validate($value);
-        //                 if ($errors !== true) {
-        //                     $errorFound = true;
-        //                     break;
-        //                 }
-        //             }
-        //         }
-        //         if(!$errorFound){
-        //             $tmp[] = $item;
-        //         }
-        //     }
-
-        // }
-
-
         $data->exchangeArray([...$data, ...$this->toArray(true)]);
-        $data['_mapped'] = [...$data['_mapped'], ...$this->mapping->map($data)];
 
         foreach ($this->children as $child) {
             $child->init($data);
@@ -119,7 +95,7 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
         $sourceXML = $this->_init();
         $xmlEncoder = new XmlEncoder(['xml_root_node_name' => 'root']);
         $xml = $xmlEncoder->encode($sourceXML, 'xml');
-        
+
         return $xml;
     }
 
@@ -135,7 +111,7 @@ abstract class SourceAbstract extends ConfigurableAbstract implements Iterator
             foreach ($this->children as $child) {
                 $data->exchangeArray([...$data, ...$child->toArray()]);
             }
-        }   
+        }
 
         $data['_mapped'] = $this->mapping->map($data);
 

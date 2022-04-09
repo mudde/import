@@ -1,0 +1,51 @@
+{
+  "id": "import1",
+  "halt-on-errors": false,
+  "source": {
+    "_type": "guzzle",
+    "host": "http://localhost:8080/data/data-root.csv",
+    "contentType": "text/csv",
+    "id": "ds1",
+    "selector": "//root/*",
+    "validate": {
+      "active": [{
+        "_type": "isTrue"
+      }],
+      "school_id": [{
+        "_type": "PositiveOrZero"
+      }]
+    },
+    "mapping": {
+      "olaf": "{{ ds1.school_id }}"
+    },
+    "children": [{
+        "id": "ds2",
+        "selector": "//item[user-id='{{ ds1.school_id }}']",
+        "_type": "guzzle",
+        "contentType": "application/json",
+        "host": "http://localhost:8080/data/data-school.json"
+      },
+      {
+        "id": "ds3",
+        "selector": "//user[id='{{ ds1.school_id }}']",
+        "_type": "guzzle",
+        "contentType": "application/xml",
+        "host": "http://localhost:8080//data/data-rest.xml"
+      }
+    ]
+  },
+  "validate": {
+    "active": [{
+      "_type": "isTrue"
+    }],
+    "school_id": [{
+      "_type": "Positive"
+    }]
+  },
+  "mapping": {
+    "rootId": "{{ ds1.id }}",
+    "name": "{{ ds1.name | lower }}",
+    "schoolId": "{{ ds1.school_id }}",
+    "active": "{{ ds1.active }}"
+  }
+}
