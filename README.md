@@ -26,7 +26,7 @@ Basic json configuration:
 ```json
 {
   "_type": "guzzle",
-  "id": "ds1",
+  "id": "source_1",
   "host": "http://localhost:8080/data/data-root.csv",
   "contentType": "text/csv",
   "selector": "//root/*", // select all items
@@ -72,19 +72,18 @@ And this source can also have child sources. The child sources are the same as e
 ```json
 {
   "_type": "guzzle",
-  "id": "ds1",
-  ...
+  "id": "source_1",
+  ⌇
   "children": [
     {
       "_type": "guzzle",
-      "id": "ds2",
-      ...
+      "id": "source_2",
+      ⌇
       "mapping": {},
       "children": [
-        {...}
+        ⌇
       ]
-    }, 
-    {...}, 
+    }
   ]
 }
 ```
@@ -92,9 +91,9 @@ And this source can also have child sources. The child sources are the same as e
 The selected items are going to be mapped to the data structure. Mappings are used in sources and in the importer.
 ```json
 "mapping": {
-  "id": "{{ import_1.id }}",
-  "name": "{{ import_1.name | lower }} {{ import_1.lastName | lower }}",
-  "active": "{{ import_1.active }}"
+  "id": "{{ source_1.id }}",
+  "name": "{{ source_1.name | lower }} {{ source_1.lastName | lower }}",
+  "active": "{{ source_1.active }}"
 }
 ```
 Create your own export from the source file(s).
@@ -115,7 +114,7 @@ Validate the mapping created.
 ```json
 "active": [{
   "_type": "isTrue"
-}],
+}]
 ```
 If there is a validation error the system halts. When set to false the system continues to import the rest of the data.
 A validation error is a error that is thrown by the validation engine. The validation engine is a part of the system. It - must eventually - be matching the validation structure of [Symfony Validator](https://symfony.com/doc/current/validation.html).
