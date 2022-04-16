@@ -3,6 +3,7 @@
 namespace Mudde\Import\Helper;
 
 use Exception;
+use phpDocumentor\Reflection\DocBlock\Tags\Var_;
 
 class ObjectHelper
 {

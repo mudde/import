@@ -44,7 +44,7 @@
   },
   "mapping": {
     "rootId": "{{ ds1.id }}",
-    "name": "{{ ds1.name | lower }}",
+    "name": "{{ ds1.name | string.lower }}",
     "schoolId": "{{ ds1.school_id }}",
     "active": "{{ ds1.active }}"
   }

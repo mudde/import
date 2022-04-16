@@ -10,7 +10,8 @@
         "guzzlehttp/guzzle": "^7.0",
         "psr/http-client": "1.0.x-dev",
         "monolog/monolog": "3.x-dev",
-        "psr/log": "3.x-dev"
+        "psr/log": "3.x-dev",
+        "symfony/string": "6.1.x-dev"
     },
     "license": "MIT",
     "autoload": {
