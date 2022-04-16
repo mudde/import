@@ -8,7 +8,7 @@ class ObjectHelper
 {
     static $specialChar = ['-', '_', ' ', '/'];
 
-    static function properName($name, $namespace = '')
+    static function properName(string $name, string $namespace = '')
     {
         $specialChar = self::$specialChar;
         $properName = str_replace($specialChar, '', ucwords($name, implode('', $specialChar)));
@@ -16,7 +16,7 @@ class ObjectHelper
         return  $namespace . $properName;
     }
 
-    static function getObject($config, $namespace, $name = null)
+    static function getObject(array $config, string $namespace, $name = null)
     {
         $name = $name ?? $config['_type'] ?? null;
         if ($name === null) throw new Exception('Get object error! No correct name!' . json_encode($config));

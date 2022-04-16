@@ -6,7 +6,7 @@ use ArrayObject;
 use Iterator;
 use Mudde\Import\Helper\ObjectHelper;
 use Mudde\Import\Helper\TemplateHelper;
-use Mudde\Import\MApping;
+use Mudde\Import\Mapping;
 use Mudde\Import\Validate;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;

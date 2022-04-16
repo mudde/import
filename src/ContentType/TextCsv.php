@@ -26,7 +26,7 @@ class TextCsv extends ContentTypeAbstract
         return $output;
     }
 
-    private function processItem($value)
+    private function processItem(string $value)
     {
         return array_map(function ($item) {
             return strtolower($item) == 'true'

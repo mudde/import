@@ -6,5 +6,5 @@ use ArrayObject;
 
 abstract class ContentTypeAbstract
 {
-    abstract public function process($content): ArrayObject;
+    abstract public function process(string $content): ArrayObject;
 }

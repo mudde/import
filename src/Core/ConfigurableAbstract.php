@@ -14,7 +14,7 @@ abstract class ConfigurableAbstract
         $this->configuring($config);
     }
 
-    function configuring($config): void
+    function configuring(array $config): void
     {
         $defaultConfig = $this->getDefaultConfig();
 

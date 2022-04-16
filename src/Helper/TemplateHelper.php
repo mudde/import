@@ -8,7 +8,7 @@ class TemplateHelper
 {
     public static $mustache;
 
-    static function render($text, $data): string
+    static function render(string $text, \ArrayObject $data): string
     {
         $mustache = self::getEngine();
 
